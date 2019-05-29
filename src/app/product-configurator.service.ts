@@ -1,8 +1,9 @@
-import { ElementRef, Injectable, } from "@angular/core";
-import { Subject } from "rxjs";
-import { ProductItem } from "./3D/models/ProductItem";
-import { SubProductItem } from "./3D/models/SubProductItem";
-import { MaterialTextureSwapEventData } from "./3D/models/EventData/MaterialTextureSwapEventData";
+import {ElementRef, Injectable,} from "@angular/core";
+import {Subject} from "rxjs";
+import {ProductItem} from "./3D/models/ProductItem";
+import {SubProductItem} from "./3D/models/SubProductItem";
+import {MaterialTextureSwapEventData} from "./3D/models/EventData/MaterialTextureSwapEventData";
+import {ColorKeywords} from "three/src_01/math/Euler";
 
 export enum ProductConfigurationEvent {
   Loading_Started,
@@ -34,6 +35,46 @@ export class ProductConfiguratorService {
 
   constructor() {
     let id = 0;
+    this.items.push({
+      id: id++,
+      thumbnail: "assets/models/thumbnail_Samba Dancing.png",
+      filename: "assets/models/fbx/Samba Dancing.fbx",
+      materialInfo: {
+        renderBackface: true,
+        color: 0xff0202,
+      },
+      hasFloor: false,
+      useGammaSpace: false,
+      tooltip: "",
+      subItems: [],
+    });
+    // this.items.push({
+    //   id: id++,
+    //   thumbnail: "assets/models/thumbnail_无人机.png",
+    //   filename: "assets/models/stl/无人机装配体20170104_3Z44L4u.STL",
+    //   materialInfo: {
+    //     renderBackface: true,
+    //     color: 0xff0202,
+    //   },
+    //   hasFloor: false,
+    //   useGammaSpace: false,
+    //   tooltip: "",
+    //   subItems: [],
+    // });
+
+    this.items.push({
+      id: id++,
+      thumbnail: "assets/models/thumbnail_pr2_head_pan.png",
+      filename: "assets/models/stl/ascii/pr2_head_pan.stl",
+      materialInfo: {
+        renderBackface: true,
+        color: 0x00ffff,
+      },
+      hasFloor: false,
+      useGammaSpace: false,
+      tooltip: "",
+      subItems: [],
+    });
 
     // Who needs a database!
     this.items.push({
@@ -169,7 +210,7 @@ export class ProductConfiguratorService {
     const eventKeys = Object.keys(ProductConfigurationEvent).filter(key => typeof ProductConfigurationEvent[key as any] !== "number");
 
     for (const key of eventKeys) {
-      this.subjects[ key ] = new Subject<any>();
+      this.subjects[key] = new Subject<any>();
     }
   }
 
@@ -181,11 +222,10 @@ export class ProductConfiguratorService {
     return this.subjects[type];
   }
 
-  public dispatch(type: ProductConfigurationEvent, data?: any ) {
+  public dispatch(type: ProductConfigurationEvent, data?: any) {
     if (!this.subjects[type]) {
       return;
     }
-
     this.subjects[type].next(data);
   }
 }

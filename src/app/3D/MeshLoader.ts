@@ -1,23 +1,24 @@
 import {
-  DoubleSide,
+  DoubleSide, Geometry,
   Group,
   Material,
-  Mesh,
+  Mesh, MeshLambertMaterial,
   MeshPhongMaterial,
   MeshStandardMaterial,
   Object3D,
-  TextureLoader,
-  WebGLRenderTarget
+  TextureLoader, WebGLRenderTarget,
 } from "three";
-import { MaterialCreator, MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import {MaterialCreator, MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
+import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 
-import { MaterialInfo } from "./models/MaterialInfo";
-import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { EnvironmentMapLoader } from "./EnvironmentMapLoader";
-import { ProductConfigurationEvent, ProductConfiguratorService } from "../product-configurator.service";
-import { getOnProgressCallback } from "./getOnProgressCallback";
-
+import {MaterialInfo} from "./models/MaterialInfo";
+import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import {EnvironmentMapLoader} from "./EnvironmentMapLoader";
+import {ProductConfigurationEvent, ProductConfiguratorService} from "../product-configurator.service";
+import {getOnProgressCallback} from "./getOnProgressCallback";
+import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
+import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
+// import {inflate} from 'zlib.es';
 
 export class MeshLoader {
 
@@ -39,14 +40,17 @@ export class MeshLoader {
     const promise = new Promise<Object3D>(async (resolve, reject) => {
 
       const fileParts: string[] = file.split(".");
-      const fileExtension = fileParts[ fileParts.length - 1 ].toLowerCase();
+      const fileExtension = fileParts[fileParts.length - 1].toLowerCase();
 
       let object: Object3D = null;
       if (fileExtension === "obj") {
         object = await this.loadObj(file, materialInfo);
-      }
-      else if (fileExtension === "gltf") {
+      } else if (fileExtension === "gltf") {
         object = await this.loadGlTF(file, materialInfo);
+      } else if (fileExtension === "stl") {
+        object = await this.loadSTL(file, materialInfo);
+      } else if (fileExtension === "fbx") {
+        object = await this.loadFBX(file, materialInfo);
       }
 
       resolve(object);
@@ -77,13 +81,13 @@ export class MeshLoader {
 
             const name: string = (mesh.material as Material).name;
 
-            if (materialCreator.materials[ name ]) {
-              mesh.material = materialCreator.materials[ name ];
+            if (materialCreator.materials[name]) {
+              mesh.material = materialCreator.materials[name];
             }
           });
 
           if (materialInfo.renderBackface) {
-            this.trySetBackfaceRendering([ object ]);
+            this.trySetBackfaceRendering([object]);
           }
 
           resolve();
@@ -108,7 +112,7 @@ export class MeshLoader {
         });
 
         if (materialInfo.renderBackface) {
-          this.trySetBackfaceRendering([ object ]);
+          this.trySetBackfaceRendering([object]);
         }
 
         resolve();
@@ -127,9 +131,9 @@ export class MeshLoader {
     const promise: Promise<Object3D> = new Promise(async (resolve, reject) => {
       const objLoader = new OBJLoader();
       // TODO: Add error handling.
-      objLoader.load( file, async (group: Group) => {
+      objLoader.load(file, async (group: Group) => {
         await this.loadMaterial(group, materialInfo);
-        this.setReceiveShadows([ group ] );
+        this.setReceiveShadows([group]);
         resolve(group);
       }, getOnProgressCallback(this.productConfiguratorService));
     });
@@ -145,7 +149,7 @@ export class MeshLoader {
 
       const environmentPromise = this.environmentLoader.loadEnvironment(environmentMapUrl);
       // TODO: Add error handling.
-      loader.load( file, async (gltfObject: GLTF) => {
+      loader.load(file, async (gltfObject: GLTF) => {
         // Set the environment texture
         environmentPromise.then((texture: WebGLRenderTarget) => {
           this.setReceiveShadows(gltfObject.scene.children);
@@ -163,6 +167,45 @@ export class MeshLoader {
     return promise;
   }
 
+
+  private async loadSTL(file: string, materialInfo: MaterialInfo): Promise<Object3D> {
+    const promise: Promise<Object3D> = new Promise(async (resolve, reject) => {
+      const objLoader = new STLLoader();
+      // TODO: Add error handling.
+      objLoader.load(file, async (geometry: any) => {
+        // 创建纹理
+        const mat = new MeshLambertMaterial({color: materialInfo.color});
+        const mesh = new Mesh(geometry, mat);
+        mesh.rotation.x = -0.5 * Math.PI; // 将模型摆正
+        mesh.scale.set(0.1, 0.1, 0.1); // 缩放
+        geometry.center(); // 居中显示
+        this.setReceiveShadows([mesh]);
+        resolve(mesh);
+      }, getOnProgressCallback(this.productConfiguratorService));
+    });
+
+    return promise;
+  }
+
+
+  private async loadFBX(file: string, materialInfo: MaterialInfo): Promise<Object3D> {
+    const promise: Promise<Object3D> = new Promise(async (resolve, reject) => {
+      const objLoader = new FBXLoader();
+      // TODO: Add error handling.
+      objLoader.load(file, async (object: any) => {
+
+        // object.scale.set(0.5, 0.5, 0.5);
+        // object.position.set(0, 0, 0);
+
+        this.setReceiveShadows(object);
+        resolve(object);
+      }, getOnProgressCallback(this.productConfiguratorService));
+    });
+
+    return promise;
+  }
+
+
   private setReceiveShadows(children: Object3D[]): void {
     for (const child of children) {
       child.receiveShadow = true;
@@ -174,7 +217,7 @@ export class MeshLoader {
     }
   }
 
-  private trySetEnvironmentTexture( children: Object3D[], texture: WebGLRenderTarget): void {
+  private trySetEnvironmentTexture(children: Object3D[], texture: WebGLRenderTarget): void {
     for (const child of children) {
       const mesh = child as Mesh;
       if (mesh.material) {

@@ -1,9 +1,9 @@
-import { Color, DirectionalLight, Light, PerspectiveCamera, Scene, WebGLRenderer, } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { ProductConfiguratorService } from "../product-configurator.service";
-import { ProductChanger } from "./ProductChanger";
-import { TextureChanger } from "./TextureChanger";
-import { Injectable } from "@angular/core";
+import {Color, DirectionalLight, Light, PerspectiveCamera, Scene, WebGLRenderer,} from "three";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {ProductConfiguratorService} from "../product-configurator.service";
+import {ProductChanger} from "./ProductChanger";
+import {TextureChanger} from "./TextureChanger";
+import {Injectable} from "@angular/core";
 
 @Injectable({
   providedIn: "root"
