@@ -6,6 +6,7 @@ import {MaterialTextureSwapEventData} from "./3D/models/EventData/MaterialTextur
 
 export enum ProductConfigurationEvent {
   Loading_Started,
+  Loading_Progress,
   Loading_Finished,
   Loading_Progress,
   Toolbar_ChangeProduct,

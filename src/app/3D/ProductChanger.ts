@@ -1,23 +1,23 @@
-import {ProductConfigurator} from "./ProductConfigurator";
-import {ProductItem} from "./models/ProductItem";
-import {MeshLoader} from "./MeshLoader";
-import {ProductConfigurationEvent, ProductConfiguratorService} from "../product-configurator.service";
-import {Box3, Object3D, Vector3} from "three";
-import {EnvironmentMapLoader} from "./EnvironmentMapLoader";
+import { ProductConfigurator } from "./ProductConfigurator";
+import { ProductItem } from "./models/ProductItem";
+import { MeshLoader } from "./MeshLoader";
+import { ProductConfigurationEvent, ProductConfiguratorService } from "../product-configurator.service";
+import { Box3, Object3D, Vector3 } from "three";
+import { EnvironmentMapLoader } from "./EnvironmentMapLoader";
 
 export class ProductChanger {
-  private productConfigurator: ProductConfigurator;
-  private productConfigurationService: ProductConfiguratorService;
+  private readonly productConfigurator: ProductConfigurator;
+  private readonly productConfiguratorService: ProductConfiguratorService;
 
-  private environmentMapLoader: EnvironmentMapLoader;
+  private readonly environmentMapLoader: EnvironmentMapLoader;
 
   constructor(productConfigurator: ProductConfigurator) {
     this.productConfigurator = productConfigurator;
-    this.productConfigurationService = this.productConfigurator.productConfigurationService;
+    this.productConfiguratorService = this.productConfigurator.productConfiguratorService;
 
     this.environmentMapLoader = new EnvironmentMapLoader(productConfigurator);
 
-    this.productConfigurationService.getSubject(ProductConfigurationEvent.Toolbar_ChangeProduct)
+    this.productConfiguratorService.getSubject( ProductConfigurationEvent.Toolbar_ChangeProduct )
       .subscribe((product: ProductItem) => {
         this.changeProduct(product);
       });
@@ -25,35 +25,35 @@ export class ProductChanger {
 
   public async changeProduct(product: ProductItem): Promise<void> {
     // No need to do anything if the product is the same!
-    if (this.productConfigurationService.selectedProduct === product) {
+    if (this.productConfiguratorService.selectedProduct === product) {
       return;
     }
 
-    const oldProduct = this.productConfigurationService.selectedProduct;
+    const oldProduct = this.productConfiguratorService.selectedProduct;
     if (oldProduct && oldProduct.object3D) {
       this.productConfigurator.scene.remove(oldProduct.object3D);
     }
 
-    this.productConfigurationService.selectedProduct = product;
-    const meshLoader = new MeshLoader(this.environmentMapLoader, this.productConfigurationService);
+    this.productConfiguratorService.selectedProduct = product;
+    const meshLoader = new MeshLoader(this.productConfiguratorService, this.environmentMapLoader);
 
     let obj: Object3D = product.object3D;
     if (!obj) {
-      this.productConfigurationService.dispatch(ProductConfigurationEvent.Loading_Started);
+      this.productConfiguratorService.dispatch(ProductConfigurationEvent.Loading_Started);
       obj = await meshLoader.loadMesh(product.filename, product.materialInfo);
-      this.productConfigurationService.dispatch(ProductConfigurationEvent.Loading_Finished);
+      this.productConfiguratorService.dispatch(ProductConfigurationEvent.Loading_Finished);
       product.object3D = obj;
       this.setMeshAtOrigin(obj);
     }
 
     // For example if a user clicks 2 items while they are loading it would add both causing a visual bug!
-    if (this.productConfigurationService.selectedProduct !== product) {
+    if (this.productConfiguratorService.selectedProduct !== product) {
       return;
     }
 
     this.productConfigurator.scene.add(obj);
 
-    this.toggleGammeSpace(product.useGammaSpace);
+    this.toggleGammeSpace( product.useGammaSpace );
     // Update camera position
     this.updateCameraPosition(obj, product.hasFloor);
 
@@ -98,7 +98,7 @@ export class ProductChanger {
     cameraControls.maxDistance = size * 1.5;
     cameraControls.minDistance = size * 0.75;
 
-    cameraControls.maxPolarAngle = hasFloor ? Math.PI * 0.5 : Math.PI;
+    cameraControls.maxPolarAngle = hasFloor ?  Math.PI * 0.5 : Math.PI;
 
     cameraControls.update();
   }
