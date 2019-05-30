@@ -1,10 +1,10 @@
-import { MaterialInfo } from "./MaterialInfo";
-import { SubProductItem } from "./SubProductItem";
-import { Object3D } from "three";
+import {MaterialInfo} from "./MaterialInfo";
+import {SubProductItem} from "./SubProductItem";
+import {Object3D} from "three";
 
 export interface ProductItem {
   id: number;
-  thumbnail: string;
+  thumbnail?: string;
   filename: string;
   materialInfo: MaterialInfo;
   // If true, the camera can't look at the underside of the model.
@@ -15,4 +15,5 @@ export interface ProductItem {
   selectedSubItem?: SubProductItem;
 
   object3D?: Object3D;
+  children?: ProductItem;
 }

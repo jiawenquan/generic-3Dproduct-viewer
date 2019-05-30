@@ -4,13 +4,15 @@ import {ProductItem} from "./3D/models/ProductItem";
 import {SubProductItem} from "./3D/models/SubProductItem";
 import {MaterialTextureSwapEventData} from "./3D/models/EventData/MaterialTextureSwapEventData";
 import {ColorKeywords} from "three/src_01/math/Euler";
+import {AnimationMixer} from "three";
 
 export enum ProductConfigurationEvent {
   Loading_Started,
   Loading_Progress,
   Loading_Finished,
   Toolbar_ChangeProduct,
-  Material_TextureSwap
+  Material_TextureSwap,
+  AnimationMixer_Play,
 }
 
 @Injectable({
@@ -141,8 +143,13 @@ export class ProductConfiguratorService {
       tooltip: "",
       subItems: [],
     });
+
+
+    // 创建 一个SubProductItem 集合
     // That typo... well it's fun to keep using it for this little example.
     const chearSubItems: SubProductItem[] = [];
+
+    // 集合加入数据
     chearSubItems.push({
       id: chearSubItems.length,
       // TODO: Change this into using a thumbnail.
@@ -151,6 +158,7 @@ export class ProductConfiguratorService {
       eventType: ProductConfigurationEvent.Material_TextureSwap,
       tooltip: "White chair",
     });
+    // 再次加入数据
     chearSubItems.push({
       id: chearSubItems.length,
       // TODO: Change this into using a thumbnail.
@@ -160,6 +168,7 @@ export class ProductConfiguratorService {
       tooltip: "Blue chair",
     });
 
+    // 创建一个 ProductItem实例
     const ikeaChearProduct: ProductItem = {
       id: id++,
       thumbnail: "assets/models/pbr/thumbnail_ikea_chair.png",
@@ -170,24 +179,23 @@ export class ProductConfiguratorService {
       hasFloor: false,
       useGammaSpace: true,
       tooltip: "",
-      subItems: chearSubItems,
+      subItems: chearSubItems, // 赋值 chearSubItems
       // TODO: Find a way to not hard code the selected subItem Id.
-      selectedSubItem: chearSubItems[0]
+      selectedSubItem: chearSubItems[0] // 赋值默认
     };
 
-    //
     chearSubItems[0].data = {
-      productItem: ikeaChearProduct,
-      textureSlot: "map",
+      productItem: ikeaChearProduct,   // 所属的ProductItem
+      textureSlot: "map",              //  贴图类型
       textureUrl: "assets/models/pbr/chair_mat_baseColor.png",
     } as MaterialTextureSwapEventData;
     chearSubItems[1].data = {
-      productItem: ikeaChearProduct,
-      textureSlot: "map",
-      textureUrl: "assets/models/pbr/chair_mat_baseColor_alt.png",
+      productItem: ikeaChearProduct,   // 所属的ProductItem
+      textureSlot: "map",              // 贴图类型
+      textureUrl: "assets/models/pbr/chair_mat_baseColor_alt.png", // 贴图类型
     } as MaterialTextureSwapEventData;
 
-    this.items.push(ikeaChearProduct);
+    this.items.push(ikeaChearProduct);  // 把椅子加入 items集合
 
     this.items.push({
       id: id++,

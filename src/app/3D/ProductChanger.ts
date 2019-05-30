@@ -56,7 +56,6 @@ export class ProductChanger {
     this.toggleGammeSpace(product.useGammaSpace);
     // Update camera position
     this.updateCameraPosition(obj, product.hasFloor);
-
     return;
   }
 

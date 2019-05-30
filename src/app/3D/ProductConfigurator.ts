@@ -1,9 +1,12 @@
 import {Color, DirectionalLight, Light, PerspectiveCamera, Scene, WebGLRenderer,} from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {ProductConfiguratorService} from "../product-configurator.service";
+import {ProductConfigurationEvent, ProductConfiguratorService} from "../product-configurator.service";
 import {ProductChanger} from "./ProductChanger";
 import {TextureChanger} from "./TextureChanger";
 import {Injectable} from "@angular/core";
+import {AnimationMixer} from "three/src/animation/AnimationMixer";
+import {Clock} from "three/src/core/Clock";
+import {ProductItem} from "./models/ProductItem";
 
 @Injectable({
   providedIn: "root"
@@ -15,6 +18,8 @@ export class ProductConfigurator {
   public scene: Scene;
   public camera: PerspectiveCamera;
   public cameraControls: OrbitControls;
+  public clock: Clock;
+  public mixer: AnimationMixer;
 
   public lights: Light[] = [];
 
@@ -24,6 +29,7 @@ export class ProductConfigurator {
   private textureChanger: TextureChanger;
 
   constructor(renderer: WebGLRenderer, productConfiguratorService: ProductConfiguratorService) {
+    this.clock = new Clock();
     this.renderer = renderer;
     this.productConfiguratorService = productConfiguratorService;
 
@@ -41,7 +47,7 @@ export class ProductConfigurator {
     this.cameraControls = new OrbitControls(this.camera, this.renderer.domElement);
     this.cameraControls.maxPolarAngle = Math.PI;
     this.cameraControls.minPolarAngle = 0;
-    this.cameraControls.enablePan = false;
+    this.cameraControls.enablePan = true;
     this.cameraControls.update();
 
     this.initLights();
@@ -54,12 +60,22 @@ export class ProductConfigurator {
     this.initEvents();
 
     this.startRenderLoop();
+
+    this.productConfiguratorService.getSubject(ProductConfigurationEvent.AnimationMixer_Play)
+      .subscribe((animationMixer: AnimationMixer) => {
+        console.log("animationMixer", animationMixer);
+        this.mixer = animationMixer;
+
+      });
   }
 
   public startRenderLoop() {
     const renderFunction = () => {
       this.cameraControls.update();
-
+      const delta = this.clock.getDelta();
+      if (this.mixer) {
+        this.mixer.update(delta);
+      }
       this.renderer.render(this.scene, this.camera);
 
       requestAnimationFrame(renderFunction);

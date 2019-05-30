@@ -27,7 +27,7 @@ export class ToolbarSubitemComponent implements OnInit {
 
   public clicked(): void {
     this.productItem.selectedSubItem = this.item;
-    this.productConfiguratorService.dispatch(this.item.eventType, this.item.data);
+    this.productConfiguratorService.dispatch(this.item.eventType, this.item.data); // 传入item data数据
   }
 
 }

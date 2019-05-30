@@ -18,6 +18,9 @@ import {ProductConfigurationEvent, ProductConfiguratorService} from "../product-
 import {getOnProgressCallback} from "./getOnProgressCallback";
 import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
+import {AnimationMixer} from "three/src/animation/AnimationMixer";
+import {Clock} from "three/src/core/Clock";
+
 // import {inflate} from 'zlib.es';
 
 export class MeshLoader {
@@ -194,9 +197,12 @@ export class MeshLoader {
       // TODO: Add error handling.
       objLoader.load(file, async (object: any) => {
 
+        const mixers = object.mixer = new AnimationMixer(object);
+        const action = object.mixer.clipAction(object.animations[0]);
+        action.play();
+        this.productConfiguratorService.dispatch(ProductConfigurationEvent.AnimationMixer_Play, mixers);
         // object.scale.set(0.5, 0.5, 0.5);
-        // object.position.set(0, 0, 0);
-
+        object.position.set(0, 0, 0);
         this.setReceiveShadows(object);
         resolve(object);
       }, getOnProgressCallback(this.productConfiguratorService));
